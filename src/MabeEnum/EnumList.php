@@ -7,45 +7,52 @@ use Countable;
 use InvalidArgumentException;
 
 /**
- * EnumSet implementation in base of SplObjectStorage
+ * EnumList implementation
  *
  * @link http://github.com/marc-mabe/php-enum for the canonical source repository
  * @copyright Copyright (c) 2013 Marc Bennewitz
  * @license http://github.com/marc-mabe/php-enum/blob/master/LICENSE.txt New BSD License
  */
-class EnumSet implements Iterator, Countable
+class EnumList implements Iterator, Countable
 {
     /**
-     * Enumeration class
+     * Flag for a unique set of enumerations
+     */
+    const UNIQUE  = 1;
+
+    /**
+     * Flag for an ordered set of enumerations by ordinal
+     */
+    const ORDERED = 2;
+
+    /**
      * @var string
      */
     private $enumClass;
 
     /**
-     * Highest possible ordinal number
-     * @var int
+     * @var array
      */
-    private $ordinalMax = 0;
+    private $list      = array();
 
     /**
-     * BitSet of all attached enumerations
      * @var int
      */
-    private $bitset = 0;
+    private $index     = 0;
 
     /**
-     * Ordinal number of current iterator position
      * @var int
      */
-    private $ordinal = 0;
+    private $flags     = self::UNIQUE;
 
     /**
      * Constructor
      *
-     * @param string   $enumClass Classname of an enumeration the map is for
+     * @param string   $enumClass The classname of an enumeration the map is for
+     * @param null|int $flags     Flags to define behaviours
      * @throws InvalidArgumentException
      */
-    public function __construct($enumClass)
+    public function __construct($enumClass, $flags = null)
     {
         if (!is_subclass_of($enumClass, __NAMESPACE__ . '\Enum')) {
             throw new InvalidArgumentException(sprintf(
@@ -53,9 +60,11 @@ class EnumSet implements Iterator, Countable
                 __NAMESPACE__ . '\Enum'
             ));
         }
+        $this->enumClass = $enumClass;
 
-        $this->enumClass  = $enumClass;
-        $this->ordinalMax = count($enumClass::getConstants()) - 1;
+        if ($flags !== null) {
+            $this->flags = (int) $flags;
+        }
     }
 
     /**
@@ -68,6 +77,15 @@ class EnumSet implements Iterator, Countable
     }
 
     /**
+     * Get flags of defined behaviours
+     * @return int
+     */
+    public function getFlags()
+    {
+        return $this->flags;
+    }
+
+    /**
      * Attach a new enumeration or overwrite an existing one
      * @param Enum|scalar $enum
      * @return void
@@ -75,8 +93,16 @@ class EnumSet implements Iterator, Countable
      */
     public function attach($enum)
     {
-        $enum = $this->initEnum($enum);
-        $this->bitset |= 1 << $enum->getOrdinal();
+        $enum    = $this->initEnum($enum);
+        $ordinal = $enum->getOrdinal();
+
+        if (!($this->flags & self::UNIQUE) || !in_array($ordinal, $this->list, true)) {
+            $this->list[] = $ordinal;
+
+            if ($this->flags & self::ORDERED) {
+                sort($this->list);
+            }
+        }
     }
 
     /**
@@ -87,7 +113,7 @@ class EnumSet implements Iterator, Countable
     public function contains($enum)
     {
         $enum = $this->initEnum($enum);
-        return ($this->bitset & (1 << $enum->getOrdinal())) !== 0;
+        return in_array($enum->getOrdinal(), $this->list, true);
     }
 
     /**
@@ -99,76 +125,60 @@ class EnumSet implements Iterator, Countable
     public function detach($enum)
     {
         $enum = $this->initEnum($enum);
-        $this->bitset &= ~(1 << $enum->getOrdinal());
 
-        if ($this->ordinal === $enum->getOrdinal()) {
-            $this->next();
+        while (($index = array_search($enum->getOrdinal(), $this->list, true)) !== false) {
+            unset($this->list[$index]);
         }
+
+        // reset index positions to have a real list
+        $this->list = array_values($this->list);
     }
 
     /* Iterator */
 
     /**
-     * Get current Enum
-     * @return Enum|null Returns current Enum or NULL on an invalid iterator position
+     * Get the current Enum
+     * @return Enum|null Returns the current Enum or NULL on an invalid iterator position
      */
     public function current()
     {
-        if (($this->bitset & (1 << $this->ordinal)) === 0) {
+        if (!isset($this->list[$this->index])) {
             return null;
         }
 
         $enumClass = $this->enumClass;
-        return $enumClass::getByOrdinal($this->ordinal);
+        return $enumClass::getByOrdinal($this->list[$this->index]);
     }
 
     /**
-     * Get ordinal number of current iterator position
+     * Get the current iterator position
      * @return int
      */
     public function key()
     {
-        return $this->ordinal;
+        return $this->index;
     }
 
     public function next()
     {
-        $max = $this->ordinalMax;
-        $ord = $this->ordinal;
-
-        if ($ord !== $max) {
-            $bitset = $this->bitset;
-
-            do {
-                ++$ord;
-            } while(($bitset & (1 << $ord)) === 0 && $ord !== $max);
-
-            $this->ordinal = $ord;
-        }
+        ++$this->index;
     }
 
     public function rewind()
     {
-        $this->ordinal = 0;
+        $this->index = 0;
     }
 
     public function valid()
     {
-        return ($this->bitset & (1 << $this->ordinal)) !== 0;
+        return isset($this->list[$this->index]);
     }
 
     /* Countable */
 
     public function count()
     {
-        $max = 1 << $this->ordinalMax;
-        $cnt = 0;
-        for ($bit = 1; $bit < $max; $bit = $bit << 1) {
-            if ($this->bitset & $bit) {
-                ++$cnt;
-            }
-        }
-        return $cnt;
+        return count($this->list);
     }
 
     /**
