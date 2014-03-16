@@ -27,7 +27,7 @@ foreach (MyEnum::getConstants() as $k => $v) { MyEnum::get($v); }
 
 // start bench
 echo 'EnumList (unique, ordered):' . PHP_EOL;
-echo '    instantiate: ';
+echo '    instantiate:  ';
 $tStart = microtime(true);
 $mStart = memory_get_usage();
 for ($i = 0; $i < $max; ++$i) {
@@ -35,7 +35,7 @@ for ($i = 0; $i < $max; ++$i) {
 }
 echo sprintf('%f', microtime(true) - $tStart) . ', mem: ' . (memory_get_usage() - $mStart) . PHP_EOL;
 
-echo '    attach:      ';
+echo '    attach:       ';
 $tStart = microtime(true);
 $mStart = memory_get_usage();
 for ($i = 0; $i < $max; ++$i) {
@@ -52,7 +52,25 @@ for ($i = 0; $i < $max; ++$i) {
 }
 echo sprintf('%f', microtime(true) - $tStart) . ', mem: ' . (memory_get_usage() - $mStart) . PHP_EOL;
 
-echo '    iterate:     ';
+echo '    contains:     ';
+$tStart = microtime(true);
+$mStart = memory_get_usage();
+for ($i = 0; $i < $max; ++$i) {
+    foreach (MyEnum::getConstants() as $k => $v) {
+        $obj->contains($v);
+    }
+}
+echo sprintf('%f', microtime(true) - $tStart) . ', mem: ' . (memory_get_usage() - $mStart) . PHP_EOL;
+
+echo '    iterate v:    ';
+$tStart = microtime(true);
+$mStart = memory_get_usage();
+for ($i = 0; $i < $max; ++$i) {
+    foreach ($obj as $v) {}
+}
+echo sprintf('%f', microtime(true) - $tStart) . ', mem: ' . (memory_get_usage() - $mStart) . PHP_EOL;
+
+echo '    iterate k=>v: ';
 $tStart = microtime(true);
 $mStart = memory_get_usage();
 for ($i = 0; $i < $max; ++$i) {
@@ -60,9 +78,17 @@ for ($i = 0; $i < $max; ++$i) {
 }
 echo sprintf('%f', microtime(true) - $tStart) . ', mem: ' . (memory_get_usage() - $mStart) . PHP_EOL;
 
+echo '    count:        ';
+$tStart = microtime(true);
+$mStart = memory_get_usage();
+for ($i = 0; $i < $max; ++$i) {
+    $obj->count();
+}
+echo sprintf('%f', microtime(true) - $tStart) . ', mem: ' . (memory_get_usage() - $mStart) . PHP_EOL;
+
 
 echo PHP_EOL . 'EnumSet:' . PHP_EOL;
-echo '    instantiate: ';
+echo '    instantiate:  ';
 $tStart = microtime(true);
 $mStart = memory_get_usage();
 for ($i = 0; $i < $max; ++$i) {
@@ -70,7 +96,7 @@ for ($i = 0; $i < $max; ++$i) {
 }
 echo sprintf('%f', microtime(true) - $tStart) . ', mem: ' . (memory_get_usage() - $mStart) . PHP_EOL;
 
-echo '    attach:      ';
+echo '    attach:       ';
 $start = microtime(true);
 $mStart = memory_get_usage();
 for ($i = 0; $i < $max; ++$i) {
@@ -87,11 +113,37 @@ for ($i = 0; $i < $max; ++$i) {
 }
 echo sprintf('%f', microtime(true) - $tStart) . ', mem: ' . (memory_get_usage() - $mStart) . PHP_EOL;
 
-echo '    iterate:     ';
+echo '    contains:     ';
+$tStart = microtime(true);
+$mStart = memory_get_usage();
+for ($i = 0; $i < $max; ++$i) {
+    foreach (MyEnum::getConstants() as $k => $v) {
+        $obj->contains($v);
+    }
+}
+echo sprintf('%f', microtime(true) - $tStart) . ', mem: ' . (memory_get_usage() - $mStart) . PHP_EOL;
+
+echo '    iterate v:    ';
+$tStart = microtime(true);
+$mStart = memory_get_usage();
+for ($i = 0; $i < $max; ++$i) {
+    foreach ($obj as $v) { }
+}
+echo sprintf('%f', microtime(true) - $tStart) . ', mem: ' . (memory_get_usage() - $mStart) . PHP_EOL;
+
+echo '    iterate k=>v: ';
 $tStart = microtime(true);
 $mStart = memory_get_usage();
 for ($i = 0; $i < $max; ++$i) {
     foreach ($obj as $k => $v) { }
+}
+echo sprintf('%f', microtime(true) - $tStart) . ', mem: ' . (memory_get_usage() - $mStart) . PHP_EOL;
+
+echo '    count:        ';
+$tStart = microtime(true);
+$mStart = memory_get_usage();
+for ($i = 0; $i < $max; ++$i) {
+    $obj->count();
 }
 echo sprintf('%f', microtime(true) - $tStart) . ', mem: ' . (memory_get_usage() - $mStart) . PHP_EOL;
 
