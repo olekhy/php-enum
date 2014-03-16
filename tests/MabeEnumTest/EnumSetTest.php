@@ -87,8 +87,8 @@ class EnumSetTest extends TestCase
         // attach
         $enum1 = EnumBasic::ONE();
         $enum2 = EnumBasic::TWO();
-        $enumSet->attach($enum2);
         $enumSet->attach($enum1);
+        $enumSet->attach($enum2);
 
         // a not empty enum map should be valid, starting by 0 (if not iterated)
         $this->assertSame(2, $enumSet->count());
@@ -152,5 +152,17 @@ class EnumSetTest extends TestCase
         $enumSet = new EnumSet('MabeEnumTest\TestAsset\EnumBasic');
         $this->setExpectedException('InvalidArgumentException');
         $this->assertFalse($enumSet->contains(EnumInheritance::INHERITANCE()));
+    }
+
+    public function testIterateOutOfRangeIfLastOrdinalEnumIsSet()
+    {
+        $enumSet = new EnumSet('MabeEnumTest\TestAsset\EnumBasic');
+        $enum    = EnumBasic::getByOrdinal(count(EnumBasic::getConstants()) - 1);
+
+        $enumSet->attach($enum);
+        $this->assertSame($enum, $enumSet->current());
+
+        $enumSet->next();
+        $this->assertFalse($enumSet->valid());
     }
 }
