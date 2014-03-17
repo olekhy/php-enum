@@ -118,8 +118,7 @@ class EnumSet implements Iterator, Countable
         }
 
         do {
-            ++$this->ordinal;
-            if ($this->ordinal === $this->ordinalMax) {
+            if (++$this->ordinal === $this->ordinalMax) {
                 return null;
             }
         } while(($this->bitset & (1 << $this->ordinal)) === 0);
@@ -178,8 +177,7 @@ class EnumSet implements Iterator, Countable
         }
 
         do {
-            ++$this->ordinal;
-            if ($this->ordinal === $this->ordinalMax) {
+            if (++$this->ordinal === $this->ordinalMax) {
                 return false;
             }
         } while(($this->bitset & (1 << $this->ordinal)) === 0);
