@@ -99,7 +99,7 @@ class EnumSet implements Iterator, Countable
     public function contains($enum)
     {
         $enum = $this->initEnum($enum);
-        return ($this->bitset & (1 << $enum->getOrdinal())) !== 0;
+        return (bool)($this->bitset & (1 << $enum->getOrdinal()));
     }
 
     /* Iterator */
@@ -118,10 +118,11 @@ class EnumSet implements Iterator, Countable
         }
 
         do {
-            if (++$this->ordinal === $this->ordinalMax) {
-                return null;
-            }
-        } while(($this->bitset & (1 << $this->ordinal)) === 0);
+            ++$this->ordinal;
+        } while(!($this->bitset & (1 << $this->ordinal)) && $this->ordinal !== $this->ordinalMax);
+        if ($this->ordinal === $this->ordinalMax) {
+            return null;
+        }
         $enumClass = $this->enumClass;
         return $enumClass::getByOrdinal($this->ordinal);
     }
@@ -134,10 +135,12 @@ class EnumSet implements Iterator, Countable
     {
         if ($this->bitset & (1 << $this->ordinal)) {
             return $this->ordinal;
-        } elseif ($this->bitset && $this->ordinal !== $this->ordinalMax) {
+        }
+
+        if ($this->bitset && $this->ordinal !== $this->ordinalMax) {
             do {
                 ++$this->ordinal;
-            } while(($this->bitset & (1 << $this->ordinal)) === 0 && $this->ordinal !== $this->ordinalMax);
+            } while(!($this->bitset & (1 << $this->ordinal)) && $this->ordinal !== $this->ordinalMax);
         }
         return $this->ordinal;
     }
@@ -148,10 +151,8 @@ class EnumSet implements Iterator, Countable
      */
     public function next()
     {
-        if ($this->bitset && $this->ordinal !== $this->ordinalMax) {
-            do {
-                ++$this->ordinal;
-            } while(($this->bitset & (1 << $this->ordinal)) === 0 && $this->ordinal !== $this->ordinalMax);
+        if ($this->ordinal !== $this->ordinalMax) {
+            ++$this->ordinal;
         }
     }
 
@@ -177,11 +178,9 @@ class EnumSet implements Iterator, Countable
         }
 
         do {
-            if (++$this->ordinal === $this->ordinalMax) {
-                return false;
-            }
-        } while(($this->bitset & (1 << $this->ordinal)) === 0);
-        return true;
+            ++$this->ordinal;
+        } while(!($this->bitset & (1 << $this->ordinal)) && $this->ordinal !== $this->ordinalMax);
+        return $this->ordinal !== $this->ordinalMax;
     }
 
     /* Countable */

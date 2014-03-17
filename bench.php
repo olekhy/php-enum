@@ -20,9 +20,9 @@ class MyEnum extends Enum {
 }
 
 // defs + pre-run
-$tStart = $mStart = $i = $obj = null;
+$tStart = $mStart = $i = $k = $v = $obj = null;
 $max    = 10000;
-foreach (MyEnum::getConstants() as $k => $v) { MyEnum::get($v); }
+foreach (MyEnum::getConstants() as $k => $v) { MyEnum::get($v)->getOrdinal(); }
 
 
 // start bench
