@@ -6,6 +6,8 @@ use MabeEnum\Enum;
 use MabeEnum\EnumSet;
 use MabeEnumTest\TestAsset\EnumBasic;
 use MabeEnumTest\TestAsset\EnumInheritance;
+use MabeEnumTest\TestAsset\Enum32;
+use MabeEnumTest\TestAsset\Enum64;
 use PHPUnit_Framework_TestCase as TestCase;
 
 /**
@@ -164,5 +166,43 @@ class EnumSetTest extends TestCase
 
         $enumSet->next();
         $this->assertFalse($enumSet->valid());
+    }
+
+    public function test32EnumerationsSet()
+    {
+        $enumSet = new EnumSet('MabeEnumTest\TestAsset\Enum32');
+        foreach (Enum32::getConstants() as $name => $value) {
+            $this->assertFalse($enumSet->contains($value));
+            $enumSet->attach($value);
+            $this->assertTrue($enumSet->contains($value));
+        }
+
+        $this->assertSame(32, $enumSet->count());
+
+        $expectedOrdinal = 0;
+        foreach ($enumSet as $ordinal => $enum) {
+            $this->assertSame($expectedOrdinal, $ordinal);
+            $this->assertSame($expectedOrdinal, $enum->getOrdinal());
+            $expectedOrdinal++;
+        }
+    }
+
+    public function test64EnumerationsSet()
+    {
+        $enumSet = new EnumSet('MabeEnumTest\TestAsset\Enum64');
+        foreach (Enum64::getConstants() as $name => $value) {
+            $this->assertFalse($enumSet->contains($value));
+            $enumSet->attach($value);
+            $this->assertTrue($enumSet->contains($value));
+        }
+
+        $this->assertSame(64, $enumSet->count());
+
+        $expectedOrdinal = 0;
+        foreach ($enumSet as $ordinal => $enum) {
+            $this->assertSame($expectedOrdinal, $ordinal);
+            $this->assertSame($expectedOrdinal, $enum->getOrdinal());
+            $expectedOrdinal++;
+        }
     }
 }

@@ -110,11 +110,11 @@ class EnumSet implements Iterator, Countable
      */
     public function current()
     {
-        if ($this->bitset & (1 << $this->ordinal)) {
+        if (!$this->bitset || $this->ordinal === $this->ordinalMax) {
+            return null;
+        } elseif ($this->bitset & (1 << $this->ordinal)) {
             $enumClass = $this->enumClass;
             return $enumClass::getByOrdinal($this->ordinal);
-        } elseif (!$this->bitset || $this->ordinal === $this->ordinalMax) {
-            return null;
         }
 
         do {
@@ -171,10 +171,10 @@ class EnumSet implements Iterator, Countable
      */
     public function valid()
     {
-        if ($this->bitset & (1 << $this->ordinal)) {
-            return true;
-        } elseif (!$this->bitset || $this->ordinal === $this->ordinalMax) {
+        if (!$this->bitset || $this->ordinal === $this->ordinalMax) {
             return false;
+        } elseif ($this->bitset & (1 << $this->ordinal)) {
+            return true;
         }
 
         do {
@@ -191,13 +191,14 @@ class EnumSet implements Iterator, Countable
      */
     public function count()
     {
-        $max = 1 << $this->ordinalMax;
         $cnt = 0;
-        for ($bit = 1; $bit < $max; $bit = $bit << 1) {
-            if ($this->bitset & $bit) {
+        $ord = 0;
+        do {
+            if ($this->bitset & (1 << $ord++)) {
                 ++$cnt;
             }
-        }
+        } while($ord !== $this->ordinalMax);
+
         return $cnt;
     }
 

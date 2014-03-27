@@ -22,8 +22,14 @@ class MyEnum extends Enum {
 // defs + pre-run
 $tStart = $mStart = $i = $k = $v = $obj = null;
 $max    = 10000;
-foreach (MyEnum::getConstants() as $k => $v) { MyEnum::get($v)->getOrdinal(); }
 
+$tStart = microtime(true);
+$mStart = memory_get_usage();
+echo 'init:';
+for ($i = 0; $i < $max; ++$i) {
+    foreach (MyEnum::getConstants() as $k => $v) { MyEnum::get($v)->getOrdinal(); }
+}
+echo sprintf('%f', microtime(true) - $tStart) . ', mem: ' . (memory_get_usage() - $mStart) . PHP_EOL;
 
 // start bench
 echo 'EnumList (unique, ordered):' . PHP_EOL;
