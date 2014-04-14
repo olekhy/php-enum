@@ -28,7 +28,7 @@ use MabeEnum\Enum;
  * @method EnumBasic BOOLEAN_TRUE()
  * @method EnumBasic BOOLEAN_FALSE()
  */
-class EnumBasic extends Enum
+class EnumBasic2 extends Enum
 {
     const ONE   = 1;
     const TWO   = 2;

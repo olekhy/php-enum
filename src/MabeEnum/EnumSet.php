@@ -42,14 +42,14 @@ class EnumSet implements Iterator, Countable
     /**
      * Constructor
      *
-     * @param string $enumClass Classname of an enumeration the map is for
+     * @param string $enumClass Classname of an enumeration the set is for
      * @throws InvalidArgumentException
      */
     public function __construct($enumClass)
     {
         if (!is_subclass_of($enumClass, __NAMESPACE__ . '\Enum')) {
             throw new InvalidArgumentException(sprintf(
-                "This EnumMap can handle subclasses of '%s' only",
+                "This EnumSet can handle subclasses of '%s' only",
                 __NAMESPACE__ . '\Enum'
             ));
         }
@@ -59,7 +59,7 @@ class EnumSet implements Iterator, Countable
     }
 
     /**
-     * Get the classname of enumeration this map is for
+     * Get the classname of enumeration this set is for
      * @return string
      */
     public function getEnumClass()
@@ -69,37 +69,37 @@ class EnumSet implements Iterator, Countable
 
     /**
      * Attach a new enumeration or overwrite an existing one
-     * @param Enum|scalar $enum
+     * @param Enum|null|boolean|int|float|string $enum
      * @return void
      * @throws InvalidArgumentException On an invalid given enum
      */
     public function attach($enum)
     {
-        $enum = $this->initEnum($enum);
-        $this->bitset |= 1 << $enum->getOrdinal();
+        $enumClass = $this->enumClass;
+        $this->bitset |= 1 << $enumClass::get($enum)->getOrdinal();
     }
 
     /**
      * Detach all enumerations same as the given enum
-     * @param Enum|scalar $enum
+     * @param Enum|null|boolean|int|float|string $enum
      * @return void
      * @throws InvalidArgumentException On an invalid given enum
      */
     public function detach($enum)
     {
-        $enum = $this->initEnum($enum);
-        $this->bitset &= ~(1 << $enum->getOrdinal());
+        $enumClass = $this->enumClass;
+        $this->bitset &= ~(1 << $enumClass::get($enum)->getOrdinal());
     }
 
     /**
      * Test if the given enumeration exists
-     * @param Enum|scalar $enum
+     * @param Enum|null|boolean|int|float|string $enum
      * @return boolean
      */
     public function contains($enum)
     {
-        $enum = $this->initEnum($enum);
-        return (bool)($this->bitset & (1 << $enum->getOrdinal()));
+        $enumClass = $this->enumClass;
+        return (bool)($this->bitset & (1 << $enumClass::get($enum)->getOrdinal()));
     }
 
     /* Iterator */
@@ -200,33 +200,5 @@ class EnumSet implements Iterator, Countable
         } while($ord !== $this->ordinalMax);
 
         return $cnt;
-    }
-
-    /**
-     * Initialize an enumeration
-     * @param Enum|scalar $enum
-     * @return Enum
-     * @throws InvalidArgumentException On an invalid given enum
-     */
-    private function initEnum($enum)
-    {
-        // auto instantiate
-        if (is_scalar($enum)) {
-            $enumClass = $this->enumClass;
-            return $enumClass::get($enum);
-        }
-
-        // allow only enums of the same type
-        // (don't allow instance of)
-        $enumClass = get_class($enum);
-        if ($enumClass && strcasecmp($enumClass, $this->enumClass) === 0) {
-            return $enum;
-        }
-
-        throw new InvalidArgumentException(sprintf(
-            "The given enum of type '%s' isn't same as the required type '%s'",
-            get_class($enum) ?: gettype($enum),
-            $this->enumClass
-        ));
     }
 }

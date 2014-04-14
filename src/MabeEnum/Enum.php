@@ -18,7 +18,7 @@ abstract class Enum
     /**
      * The selected value
      *
-     * @var null|scalar
+     * @var null|boolean|int|float|string
      */
     private $value;
 
@@ -46,8 +46,8 @@ abstract class Enum
     /**
      * Constructor
      *
-     * @param scalar $value The value to select
-     * @param int|null $ordinal
+     * @param null|boolean|int|float|string $value   The value to select
+     * @param int|null                      $ordinal The ordinal number of the value
      */
     final private function __construct($value, $ordinal = null)
     {
@@ -78,7 +78,7 @@ abstract class Enum
     /**
      * Get the current selected value
      *
-     * @return mixed
+     * @return null|boolean|int|float|string
      */
     final public function getValue()
     {
@@ -123,13 +123,17 @@ abstract class Enum
     /**
      * Get an enum of the given value
      *
-     * @param scalar $value
-     * @return Enum
+     * @param static|null|boolean|int|float|string $value
+     * @return static
      * @throws InvalidArgumentException On an unknwon or invalid value
      * @throws LogicException           On ambiguous constant values
      */
-    final static public function get($value)
+    final public static function get($value)
     {
+        if ($value instanceof static) {
+            $value = $value->getValue();
+        }
+
         $class     = get_called_class();
         $constants = self::detectConstants($class);
         $name      = array_search($value, $constants, true);
@@ -152,7 +156,7 @@ abstract class Enum
      * Get an enum by the given name
      *
      * @param string $name The name to instantiate the enum by
-     * @return Enum
+     * @return static
      * @throws InvalidArgumentException On an invalid or unknown name
      * @throws LogicException           On ambiguous constant values
      */
@@ -176,7 +180,7 @@ abstract class Enum
      * Get an enum by the given ordinal number
      *
      * @param int $ordinal The ordinal number to instantiate the enum by
-     * @return Enum
+     * @return static
      * @throws InvalidArgumentException On an invalid ordinal number
      * @throws LogicException           On ambiguous constant values
      */
@@ -208,7 +212,7 @@ abstract class Enum
      *
      * @return void
      */
-    final static public function clear()
+    final public static function clear()
     {
         $class = get_called_class();
         unset(self::$instances[$class], self::$constants[$class]);
@@ -220,7 +224,7 @@ abstract class Enum
      * @return array
      * @throws LogicException On ambiguous constant values
      */
-    final static public function getConstants()
+    final public static function getConstants()
     {
         return self::detectConstants(get_called_class());
     }
@@ -232,7 +236,7 @@ abstract class Enum
      * @return array
      * @throws LogicException On ambiguous constant values
      */
-    static private function detectConstants($class)
+    private static function detectConstants($class)
     {
         if (!isset(self::$constants[$class])) {
             $reflection = new ReflectionClass($class);
@@ -274,7 +278,7 @@ abstract class Enum
      *
      * @param string $method The name to instantiate the enum by (called as method)
      * @param array  $args   There should be no arguments
-     * @return Enum
+     * @return static
      * @throws InvalidArgumentException On an invalid or unknown name
      * @throws LogicException           On ambiguous constant values
      */
